@@ -1,0 +1,3 @@
+[submodule "submodules/coinbase-pro"]
+	path = submodules/coinbase-pro
+	url = https://github.com/Tochicool/coinbase-pro

@@ -1,0 +1,12 @@
+resolver: lts-14.21
+
+packages:
+  - .
+  - submodules/coinbase-pro
+
+extra-deps:
+  - aeson-casing-0.1.1.0@sha256:625f5a6480a987775e683aeab15e38b19f53ded9ad56e85ba5997a6d882c8958,1466
+  - http-client-0.5.14@sha256:4880b27d6741e331454a1d4c887d96ce3d7d625322c8433983a4b1cd08538577,5348
+  - monad-validate-1.2.0.0@sha256:9850f408431098b28806dd464b6825a88a0b56c84f380d7fe0454c1df9d6f881,3505
+  - symmetric-properties-0.1.0.1@sha256:c44a0cd2f900b0687b3133d81d619c2a87b48d62ac04d5225b1ac865e43cd60d,1598
+  - unagi-streams-0.2.6@sha256:32f4ba71b07b0fb68ed2e4d1489c063f72d32c321e2d485485f602eb10e12acb,1145

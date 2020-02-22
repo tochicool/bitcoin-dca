@@ -1,0 +1,8 @@
+.stack-work/
+coinbase-pro-dca.cabal
+*~
+.idea/
+*.iml
+out/
+.vscode/
+config.yaml

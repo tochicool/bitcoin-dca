@@ -1,0 +1,80 @@
+library:
+  source-dirs: src
+tests:
+  coinbase-pro-dca-test:
+    source-dirs: test
+    main: Spec.hs
+    ghc-options:
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+    dependencies:
+      - coinbase-pro-dca
+copyright: 2020 Tochukwu Obudulu
+category: Web, Finance
+maintainer: tochicool@gmail.com
+dependencies:
+  - base >= 4.7 && < 5
+  - bytestring
+  - coinbase-pro
+  - cron
+  - dlist
+  - exceptions
+  - forkable-monad
+  - generic-deriving
+  - katip
+  - monad-validate
+  - mtl
+  - optparse-applicative
+  - retry
+  - servant-client
+  - symmetric-properties
+  - text
+  - time
+  - transformers-base
+  - yaml
+default-extensions:
+  - ApplicativeDo
+  - BlockArguments
+  - DeriveDataTypeable
+  - DeriveGeneric
+  - DuplicateRecordFields
+  - FlexibleContexts
+  - FlexibleInstances
+  - GeneralizedNewtypeDeriving
+  - LambdaCase
+  - MultiParamTypeClasses
+  - MultiWayIf
+  - NamedFieldPuns
+  - NumericUnderscores
+  - OverloadedLabels
+  - OverloadedStrings
+  - RecordWildCards
+  - ScopedTypeVariables
+  - StandaloneDeriving
+  - TemplateHaskell
+  - TypeApplications
+  - TypeFamilies
+  - UndecidableInstances
+name: coinbase-pro-dca
+version: 0.1.0.0
+extra-source-files:
+  - README.md
+  - ChangeLog.md
+synopsis: Service which automates dollar cost averaging with the CoinBase Pro API
+author: Tochukwu Obudulu
+github: tochicool/coinbase-pro-dca
+license: BSD3
+executables:
+  coinbase-pro-dca:
+    source-dirs: app
+    main: Main.hs
+    ghc-options:
+      - -O2
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+      - -Wall -Wno-orphans -Wno-type-defaults -Wno-name-shadowing
+    dependencies:
+      - coinbase-pro-dca
+description: Please see the README on GitHub at <https://github.com/tochicool/coinbase-pro-dca#readme>
