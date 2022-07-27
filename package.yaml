@@ -1,80 +1,86 @@
+name:                bitcoin-dca
+version:             0.2.0.0
+github:              "tochicool/bitcoin-dca"
+license:             BSD3
+author:              "Tochi Obudulu"
+maintainer:          "tochicool@gmail.com"
+copyright:           "2020-2022 Tochi Obudulu"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+synopsis:            Automate dollar cost averaging on exchanges
+category:            Finance, Web
+
+description:         Please see the README on GitHub at <https://github.com/tochicool/bitcoin-dca#readme>
+
+dependencies:
+- aeson
+- async
+- base >= 4.7 && < 5
+- base64
+- bitcoin-scripting
+- bytestring
+- co-log
+- containers
+- cron
+- cryptonite
+- forkable-monad
+- haskoin-core
+- http-client
+- http-client-tls
+- http-types
+- memory
+- monad-validate
+- mtl
+- optparse-applicative
+- pretty-simple
+- retry
+- safe-money
+- semver
+- servant
+- servant-client
+- stm
+- text
+- time
+- unliftio
+- unordered-containers
+- uuid
+- yaml
+
+ghc-options:
+  - -Wall -Wno-name-shadowing
+
 library:
   source-dirs: src
-tests:
-  coinbase-pro-dca-test:
-    source-dirs: test
-    main: Spec.hs
-    ghc-options:
-      - -threaded
-      - -rtsopts
-      - -with-rtsopts=-N
-    dependencies:
-      - coinbase-pro-dca
-copyright: 2020 Tochukwu Obudulu
-category: Web, Finance
-maintainer: tochicool@gmail.com
-dependencies:
-  - base >= 4.7 && < 5
-  - bytestring
-  - coinbase-pro
-  - cron
-  - dlist
-  - exceptions
-  - forkable-monad
-  - generic-deriving
-  - katip
-  - monad-validate
-  - mtl
-  - optparse-applicative
-  - retry
-  - servant-client
-  - symmetric-properties
-  - text
-  - time
-  - transformers-base
-  - yaml
-default-extensions:
-  - ApplicativeDo
-  - BlockArguments
-  - DeriveDataTypeable
-  - DeriveGeneric
-  - DuplicateRecordFields
-  - FlexibleContexts
-  - FlexibleInstances
-  - GeneralizedNewtypeDeriving
-  - LambdaCase
-  - MultiParamTypeClasses
-  - MultiWayIf
-  - NamedFieldPuns
-  - NumericUnderscores
-  - OverloadedLabels
-  - OverloadedStrings
-  - RecordWildCards
-  - ScopedTypeVariables
-  - StandaloneDeriving
-  - TemplateHaskell
-  - TypeApplications
-  - TypeFamilies
-  - UndecidableInstances
-name: coinbase-pro-dca
-version: 0.1.0.0
-extra-source-files:
-  - README.md
-  - ChangeLog.md
-synopsis: Service which automates dollar cost averaging with the CoinBase Pro API
-author: Tochukwu Obudulu
-github: tochicool/coinbase-pro-dca
-license: BSD3
+
 executables:
-  coinbase-pro-dca:
-    source-dirs: app
-    main: Main.hs
+  bitcoin-dca:
+    main:                Main.hs
+    source-dirs:         app
     ghc-options:
-      - -O2
-      - -threaded
-      - -rtsopts
-      - -with-rtsopts=-N
-      - -Wall -Wno-orphans -Wno-type-defaults -Wno-name-shadowing
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    when:        
+    - condition: false
+      other-modules: Paths_bitcoin_dca
     dependencies:
-      - coinbase-pro-dca
-description: Please see the README on GitHub at <https://github.com/tochicool/coinbase-pro-dca#readme>
+    - bitcoin-dca
+
+tests:
+  bitcoin-dca-test:
+    main: "Driver.hs"
+    source-dirs: "test"
+    dependencies:
+    - base
+    - bitcoin-dca
+    - generic-random
+    - QuickCheck
+    - tasty
+    - tasty-hunit
+    - tasty-quickcheck
+    - tasty-smallcheck
+    build-tools:
+      tasty-discover:tasty-discover

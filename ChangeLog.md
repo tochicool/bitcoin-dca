@@ -7,11 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Reworked design
+- Updated to support Coinbase API breaking change removing `max_market_funds` fields [2022-JUN-30](https://docs.cloud.coinbase.com/exchange/docs/changelog#2022-jun-30) 
+
 ## [0.1.0.0] - 2020-02-22
 
 ### Added
 
 - Initial project release.
 
-[unreleased]: https://github.com/tochicool/coinbase-pro-dca/compare/v0.1.0.0...HEAD
-[0.1.0.0]: https://github.com/tochicool/coinbase-pro-dca/releases/tag/v0.1.0.0
+[unreleased]: https://github.com/tochicool/bitcoin-dca/compare/v0.1.0.0...HEAD
+[0.1.0.0]: https://github.com/tochicool/bitcoin-dca/releases/tag/v0.1.0.0

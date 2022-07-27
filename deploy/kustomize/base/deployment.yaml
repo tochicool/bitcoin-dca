@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bitcoin-dca
+  labels:
+    app: bitcoin-dca
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bitcoin-dca
+  template:
+    metadata:
+      labels:
+        app: bitcoin-dca
+    spec:
+      containers:
+      - name: bitcoin-dca
+        image: bitcoin-dca
+        command: ['bitcoin-dca']
+        volumeMounts:
+        - name: config
+          mountPath: /bitcoin-dca/config
+          readOnly: true
+        imagePullPolicy: Always
+      volumes:
+      - name: config
+        secret:
+          secretName: config

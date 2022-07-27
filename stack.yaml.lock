@@ -5,19 +5,19 @@
 
 packages:
 - completed:
-    hackage: aeson-casing-0.1.1.0@sha256:625f5a6480a987775e683aeab15e38b19f53ded9ad56e85ba5997a6d882c8958,1466
+    hackage: co-log-0.4.0.1@sha256:3d4c17f37693c80d1aa2c41669bc3438fac3e89dc5f479e57d79bc3ddc4dfcc5,5087
     pantry-tree:
-      size: 417
-      sha256: fcb9f9614c086fbd83ecd81c3306c7ec9c3de2bd45ff40a3cebd0e10113966b6
+      size: 1126
+      sha256: e73165ff8f744709428e2e87984c9d60ca1cec43d8455c413181c7c466e7497c
   original:
-    hackage: aeson-casing-0.1.1.0@sha256:625f5a6480a987775e683aeab15e38b19f53ded9ad56e85ba5997a6d882c8958,1466
+    hackage: co-log-0.4.0.1@sha256:3d4c17f37693c80d1aa2c41669bc3438fac3e89dc5f479e57d79bc3ddc4dfcc5,5087
 - completed:
-    hackage: http-client-0.5.14@sha256:4880b27d6741e331454a1d4c887d96ce3d7d625322c8433983a4b1cd08538577,5348
+    hackage: ansi-terminal-0.10.3@sha256:e2fbcef5f980dc234c7ad8e2fa433b0e8109132c9e643bc40ea5608cd5697797,3226
     pantry-tree:
-      size: 2457
-      sha256: 02bcffba9cad572fefb4640f5fc9be68e770b32ab73efcac649db20290994c6d
+      size: 1461
+      sha256: 02f05d52be3ffcf36c78876629cbab80b63420672685371aea4fd10e1c4aabb6
   original:
-    hackage: http-client-0.5.14@sha256:4880b27d6741e331454a1d4c887d96ce3d7d625322c8433983a4b1cd08538577,5348
+    hackage: ansi-terminal-0.10.3@sha256:e2fbcef5f980dc234c7ad8e2fa433b0e8109132c9e643bc40ea5608cd5697797,3226
 - completed:
     hackage: monad-validate-1.2.0.0@sha256:9850f408431098b28806dd464b6825a88a0b56c84f380d7fe0454c1df9d6f881,3505
     pantry-tree:
@@ -26,22 +26,23 @@ packages:
   original:
     hackage: monad-validate-1.2.0.0@sha256:9850f408431098b28806dd464b6825a88a0b56c84f380d7fe0454c1df9d6f881,3505
 - completed:
-    hackage: symmetric-properties-0.1.0.1@sha256:c44a0cd2f900b0687b3133d81d619c2a87b48d62ac04d5225b1ac865e43cd60d,1598
+    hackage: bitcoin-scripting-0.2.0@sha256:8ee26f223d6446867884c401dae1cd9cf0034652a4ffa74d0ad727e7b2de0eb4,2314
     pantry-tree:
-      size: 347
-      sha256: f44965625197080e5a41730edaf2997d4ca29ee1725404e6e4df895b714ed06a
+      size: 2027
+      sha256: 6b917418bc092adf63d8ca526c5f92faf8cc7b53e5c4578c1bc809c461cf0146
   original:
-    hackage: symmetric-properties-0.1.0.1@sha256:c44a0cd2f900b0687b3133d81d619c2a87b48d62ac04d5225b1ac865e43cd60d,1598
+    hackage: bitcoin-scripting-0.2.0@sha256:8ee26f223d6446867884c401dae1cd9cf0034652a4ffa74d0ad727e7b2de0eb4,2314
 - completed:
-    hackage: unagi-streams-0.2.6@sha256:32f4ba71b07b0fb68ed2e4d1489c063f72d32c321e2d485485f602eb10e12acb,1145
+    hackage: haskoin-core-0.20.5@sha256:b88f2a55171d0d9e387789fdbe6f2801c9aba4effb538c5483ee3f48a2b39bac,4836
     pantry-tree:
-      size: 329
-      sha256: f8f9d8089c62c9e7a6265a018a01585dec0bbd6d8cde20bd53e47e3fa4575c5c
+      size: 5111
+      sha256: a35c0805ae1794076f6242aa7606ab4917358699202c3bc4677d3a7d0614e8d4
   original:
-    hackage: unagi-streams-0.2.6@sha256:32f4ba71b07b0fb68ed2e4d1489c063f72d32c321e2d485485f602eb10e12acb,1145
+    hackage: haskoin-core-0.20.5@sha256:b88f2a55171d0d9e387789fdbe6f2801c9aba4effb538c5483ee3f48a2b39bac,4836
 snapshots:
 - completed:
-    size: 524162
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/14/21.yaml
-    sha256: 9a55dd75853718f2bbbe951872b36a3b7802fcd71796e0f25b8664f24e34c666
-  original: lts-14.21
+    size: 590100
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/28.yaml
+    sha256: 428ec8d5ce932190d3cbe266b9eb3c175cd81e984babf876b64019e2cbe4ea68
+  original:
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/28.yaml

@@ -1,0 +1,16 @@
+version: 2.0.0
+exchanges:
+  coinbase:
+    baseUrl: https://api-public.sandbox.exchange.coinbase.com
+    accessKey: 6efb3cc87f19dad41921adc0a9c06d06
+    passphrase: 8edd3hm2ops
+    secretKey: 7eA2w7uyI2rx28qLzo/13cC3jWtS6qalBn0bpGtv/4IM/NXbtm63Gc94yfVvnGF/CztCm8EAlVp/YgAi5TiFKw==
+    strategies:
+    - type: ScheduledBuys
+      buy: BTC
+      withFunds: 20 USD
+      frequency: '@weekly'
+      minimumAmount: 1 USD
+    - type: SweepWithdraw
+      withdraw: BTC
+      address: bc1qh5xf4vz8zlpptljr2rh8yrxwh4yu4va2m9hy7q

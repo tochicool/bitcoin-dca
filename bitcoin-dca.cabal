@@ -1,0 +1,183 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.4.
+--
+-- see: https://github.com/sol/hpack
+
+name:           bitcoin-dca
+version:        0.2.0.0
+synopsis:       Automate dollar cost averaging on exchanges
+description:    Please see the README on GitHub at <https://github.com/tochicool/bitcoin-dca#readme>
+category:       Finance, Web
+homepage:       https://github.com/tochicool/bitcoin-dca#readme
+bug-reports:    https://github.com/tochicool/bitcoin-dca/issues
+author:         Tochi Obudulu
+maintainer:     tochicool@gmail.com
+copyright:      2020-2022 Tochi Obudulu
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/tochicool/bitcoin-dca
+
+library
+  exposed-modules:
+      BitcoinDCA.CLI
+      BitcoinDCA.Common
+      BitcoinDCA.Config
+      BitcoinDCA.Exchange
+      BitcoinDCA.Exchange.Coinbase
+      BitcoinDCA.Exchange.Coinbase.API
+      BitcoinDCA.Exchange.Coinbase.API.Client
+      BitcoinDCA.Exchange.Coinbase.API.Types
+      BitcoinDCA.Explorer
+      BitcoinDCA.Explorer.Esplora
+      BitcoinDCA.Explorer.Esplora.API
+      BitcoinDCA.Explorer.Esplora.API.Client
+      BitcoinDCA.Explorer.Esplora.API.Types
+      BitcoinDCA.External
+      BitcoinDCA.Main
+      BitcoinDCA.Strategy
+      BitcoinDCA.Strategy.ScheduledBuys
+      BitcoinDCA.Strategy.SweepWithdraw
+      BitcoinDCA.Types
+      Servant.Client.Internal.HttpClient.Extended
+  other-modules:
+      Paths_bitcoin_dca
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wno-name-shadowing
+  build-depends:
+      aeson
+    , async
+    , base >=4.7 && <5
+    , base64
+    , bitcoin-scripting
+    , bytestring
+    , co-log
+    , containers
+    , cron
+    , cryptonite
+    , forkable-monad
+    , haskoin-core
+    , http-client
+    , http-client-tls
+    , http-types
+    , memory
+    , monad-validate
+    , mtl
+    , optparse-applicative
+    , pretty-simple
+    , retry
+    , safe-money
+    , semver
+    , servant
+    , servant-client
+    , stm
+    , text
+    , time
+    , unliftio
+    , unordered-containers
+    , uuid
+    , yaml
+  default-language: Haskell2010
+
+executable bitcoin-dca
+  main-is: Main.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wno-name-shadowing -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , async
+    , base >=4.7 && <5
+    , base64
+    , bitcoin-dca
+    , bitcoin-scripting
+    , bytestring
+    , co-log
+    , containers
+    , cron
+    , cryptonite
+    , forkable-monad
+    , haskoin-core
+    , http-client
+    , http-client-tls
+    , http-types
+    , memory
+    , monad-validate
+    , mtl
+    , optparse-applicative
+    , pretty-simple
+    , retry
+    , safe-money
+    , semver
+    , servant
+    , servant-client
+    , stm
+    , text
+    , time
+    , unliftio
+    , unordered-containers
+    , uuid
+    , yaml
+  default-language: Haskell2010
+
+test-suite bitcoin-dca-test
+  type: exitcode-stdio-1.0
+  main-is: Driver.hs
+  other-modules:
+      BitcoinDCA.Test.Strategy.ScheduledBuys
+      BitcoinDCA.Test.Types
+      Paths_bitcoin_dca
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wno-name-shadowing
+  build-tool-depends:
+      tasty-discover:tasty-discover
+  build-depends:
+      QuickCheck
+    , aeson
+    , async
+    , base
+    , base64
+    , bitcoin-dca
+    , bitcoin-scripting
+    , bytestring
+    , co-log
+    , containers
+    , cron
+    , cryptonite
+    , forkable-monad
+    , generic-random
+    , haskoin-core
+    , http-client
+    , http-client-tls
+    , http-types
+    , memory
+    , monad-validate
+    , mtl
+    , optparse-applicative
+    , pretty-simple
+    , retry
+    , safe-money
+    , semver
+    , servant
+    , servant-client
+    , stm
+    , tasty
+    , tasty-hunit
+    , tasty-quickcheck
+    , tasty-smallcheck
+    , text
+    , time
+    , unliftio
+    , unordered-containers
+    , uuid
+    , yaml
+  default-language: Haskell2010

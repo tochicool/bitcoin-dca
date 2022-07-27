@@ -1,0 +1,282 @@
+name: CI/CD
+
+on:
+  push:
+    branches: ["master"]
+    tags: ["v*.*.*"]
+  pull_request:
+    branches: ["master"]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+
+  changes:
+    runs-on: ubuntu-latest
+    name: Detect changes
+    outputs:
+      build: ${{ steps.filter.outputs.build }}
+      docker: ${{ steps.filter.outputs.docker }}
+      deploy: ${{ steps.filter.outputs.deploy }}
+    steps:
+    - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
+
+    - uses: dorny/paths-filter@b2feaf19c27470162a626bd6fa8438ae5b263721
+      id: filter
+      with:
+        base: ${{ github.event.repository.default_branch }}
+        filters: |
+          build:
+            - '.github/**'
+            - 'src/**'
+            - 'app/**'
+            - 'test/**'
+            - 'lib/**'
+            - 'package.yaml'
+            - 'stack*.yaml'
+            - '*.cabal'
+          docker:
+            - '.github/**'
+            - 'Dockerfile'
+          deploy:
+            - '.github/**'
+            - 'deploy/**'
+
+  lint:
+    needs: changes
+    if: ${{ needs.changes.outputs.build == 'true' }}
+    runs-on: ubuntu-latest
+    name: Lint code
+    steps:
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
+
+      - name: Set up HLint
+        uses: haskell/actions/hlint-setup@f7b0997283589ea5a6b4f2ade6a239d70a412877
+
+      - name: Run HLint
+        uses: haskell/actions/hlint-run@f7b0997283589ea5a6b4f2ade6a239d70a412877
+        with:
+          path: '["app/", "src/", "test/"]'
+          fail-on: warning
+
+  docker:
+    needs: [changes]
+    if: ${{ needs.changes.outputs.build == 'true' || needs.changes.outputs.docker == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
+    name: Docker
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
+
+      - name: Install cosign
+        if: github.event_name != 'pull_request'
+        uses: sigstore/cosign-installer@09a077b27eb1310dcfb21981bee195b30ce09de0
+
+      - name: Setup Docker buildx
+        uses: docker/setup-buildx-action@dc7b9719a96d48369863986a06765841d7ea23f6
+
+      - name: Log into registry ${{ env.REGISTRY }}
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@d398f07826957cd0a18ea1b059cf1207835e60bc
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@69f6fc9d46f2f8bf0d5491e4aabe0bb8c6a4678a
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      - name: Build and push Docker image
+        id: build-and-push
+        uses: docker/build-push-action@1cb9d22b932e4832bb29793b7777ec860fc1cde0
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Sign the published Docker image
+        if: ${{ github.event_name != 'pull_request' }}
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        run: echo "${{ steps.meta.outputs.tags }}" | xargs -I {} cosign sign {}@${{ steps.build-and-push.outputs.digest }}
+
+  build:
+    needs: [changes]
+    if: ${{ needs.changes.outputs.build == 'true' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macOS-latest
+          - windows-latest
+
+    name: Build
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
+        with:
+          submodules: true
+
+      - uses: haskell/actions/setup@f7b0997283589ea5a6b4f2ade6a239d70a412877
+        id: setup-haskell
+        with:
+          enable-stack: true
+          stack-no-global: true
+
+      - name: Cache
+        id: cache
+        uses: actions/cache@0865c47f36e68161719c5b124609996bb5c40129
+        with:
+          path: |
+            ${{ steps.setup-haskell.outputs.stack-root }}
+          key: ${{ runner.os }}-${{ hashFiles('**/package.yaml', '**/stack.yaml', '**/stack.yaml.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-
+
+      - name: Install buildtools (MacOS)
+        if: matrix.os == 'macOS-latest'
+        run: brew install automake
+
+      - name: Install libsecp256k1 (Unix)
+        if: matrix.os != 'windows-latest'
+        working-directory: ./lib/secp256k1
+        run: |
+          ./autogen.sh
+          ./configure
+          make
+          make check
+          sudo make install
+          echo "LD_LIBRARY_PATH=/usr/local/lib" >> $GITHUB_ENV
+
+      - name: Install libsecp256k1 (Windows)
+        if: matrix.os == 'windows-latest'
+        working-directory: ./lib/secp256k1
+        run: |
+          pacman --noconfirm -Sy msys2-keyring
+          pacman --noconfirm -S mingw-w64-x86_64-pkg-config
+          pacman --noconfirm -S mingw-w64-x86_64-autotools
+          ./autogen.sh
+          ./configure --prefix=/mingw64
+          make
+          make check
+          make install
+        shell: stack exec -- bash {0}
+
+      - name: Install dependencies
+        run: |
+          stack build --test --only-dependencies
+
+      - name: Build
+        id: build
+        run: |
+          stack build --test --no-run-tests --no-run-benchmarks
+
+      - name: Test
+        run: |
+          stack build --test
+
+      - name: Set executable extension
+        if: matrix.os == 'windows-latest'
+        run: echo "::set-output name=ext::.exe"
+        id: exe
+
+      - name: Install executables
+        run: |
+          stack --local-bin-path bin install
+          mv bin/bitcoin-dca${{ steps.exe.outputs.ext }} bin/bitcoin-dca-${{ matrix.os }}${{ steps.exe.outputs.ext }}
+        shell: bash
+
+      - name: Upload executables
+        uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8
+        with:
+          name: bitcoin-dca-${{ matrix.os }}${{ steps.exe.outputs.ext }}
+          path: bin/bitcoin-dca-${{ matrix.os }}${{ steps.exe.outputs.ext }}
+
+  pre-release:
+    needs: build
+    name: Pre Release
+    runs-on: ubuntu-latest
+
+    if: >
+      github.ref == 'refs/heads/master'
+    steps:
+      - name: Download Linux executable
+        uses: actions/download-artifact@fb598a63ae348fa914e94cd0ff38f362e927b741
+        with:
+          name: bitcoin-dca-ubuntu-latest
+          path: bin
+      - name: Download MacOS executable
+        uses: actions/download-artifact@fb598a63ae348fa914e94cd0ff38f362e927b741
+        with:
+          name: bitcoin-dca-macOS-latest
+          path: bin
+      - name: Download Windows executable
+        uses: actions/download-artifact@fb598a63ae348fa914e94cd0ff38f362e927b741
+        with:
+          name: bitcoin-dca-windows-latest.exe
+          path: bin
+      - uses: marvinpinto/action-automatic-releases@919008cf3f741b179569b7a6fb4d8860689ab7f0
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          automatic_release_tag: latest
+          prerelease: true
+          title: Latest Build
+          files: |
+            LICENSE
+            bin/bitcoin-dca-*
+
+  deploy:
+    needs: [changes]
+    if: ${{ github.ref == 'refs/heads/master' && needs.changes.outputs.deploy == 'true' }}
+
+    name: Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
+
+      - uses: Azure/setup-kubectl@7f7e5ba5ea3e491b92e6e8e5819963f8f3a1f076
+
+      - uses: Azure/k8s-set-context@812899744721e338198d4dbd8dac65abecb824ce
+        with:
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+      - name: Write config.yaml secret
+        run: |
+           echo "${{ secrets.CONFIG }}" > deploy/kustomize/base-secret/config.yaml
+        env:
+          CONFIG: ${{ secrets.CONFIG }}
+        if: "${{ env.CONFIG != '' }}"
+
+      - uses: Azure/k8s-bake@97c530f4236faeb7aa7a3ea83fd730637b75c899
+        with:
+          renderEngine: kustomize
+          kustomizationPath: deploy/kustomize/production
+          kubectl-version: latest
+        id: bake
+
+      - uses: Azure/k8s-deploy@497ce6351cbc80f4a4ccec2b9147fce14017c0eb
+        with:
+          action: deploy
+          manifests: ${{ steps.bake.outputs.manifestsBundle }}
+          namespace: bitcoin-dca

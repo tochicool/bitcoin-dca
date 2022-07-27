@@ -1,12 +1,15 @@
-resolver: lts-14.21
+resolver:
+  url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/28.yaml
 
 packages:
-  - .
-  - submodules/coinbase-pro
+- .
 
 extra-deps:
-  - aeson-casing-0.1.1.0@sha256:625f5a6480a987775e683aeab15e38b19f53ded9ad56e85ba5997a6d882c8958,1466
-  - http-client-0.5.14@sha256:4880b27d6741e331454a1d4c887d96ce3d7d625322c8433983a4b1cd08538577,5348
-  - monad-validate-1.2.0.0@sha256:9850f408431098b28806dd464b6825a88a0b56c84f380d7fe0454c1df9d6f881,3505
-  - symmetric-properties-0.1.0.1@sha256:c44a0cd2f900b0687b3133d81d619c2a87b48d62ac04d5225b1ac865e43cd60d,1598
-  - unagi-streams-0.2.6@sha256:32f4ba71b07b0fb68ed2e4d1489c063f72d32c321e2d485485f602eb10e12acb,1145
+- co-log-0.4.0.1@sha256:3d4c17f37693c80d1aa2c41669bc3438fac3e89dc5f479e57d79bc3ddc4dfcc5,5087
+- ansi-terminal-0.10.3@sha256:e2fbcef5f980dc234c7ad8e2fa433b0e8109132c9e643bc40ea5608cd5697797,3226
+- monad-validate-1.2.0.0@sha256:9850f408431098b28806dd464b6825a88a0b56c84f380d7fe0454c1df9d6f881,3505
+- bitcoin-scripting-0.2.0@sha256:8ee26f223d6446867884c401dae1cd9cf0034652a4ffa74d0ad727e7b2de0eb4,2314
+- haskoin-core-0.20.5@sha256:b88f2a55171d0d9e387789fdbe6f2801c9aba4effb538c5483ee3f48a2b39bac,4836
+
+ghc-options:
+  "$everything": -haddock
