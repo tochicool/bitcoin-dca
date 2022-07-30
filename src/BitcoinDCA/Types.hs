@@ -5,7 +5,6 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -150,21 +149,26 @@ data CronTarget quote = CronTarget
 
 instance Target (CronTarget quote) where
   type TargetQuote (CronTarget quote) = quote
-  fundsAt t@CronTarget {everyTick} = (everyTick *) . money' . toRational . fundsAt' t
+  fundsAt t@CronTarget {..} currentTime
+    | Just previousTime <- previousMatch cronSchedule currentTime = (everyTick *) . money' . toRational $ fundsAt' t {startTime = previousTime} currentTime
+    | otherwise = 0
     where
       fundsAt' CronTarget {..} currentTime
         | Just nextTime <- nextMatch cronSchedule startTime =
-          case nextTime `compare` currentTime of
+          case currentTime `compare` nextTime of
             LT ->
-              1
-                + fundsAt' CronTarget {startTime = nextTime, ..} currentTime
-            GT ->
               currentTime `diffUTCTime` startTime
                 / nextTime `diffUTCTime` startTime
+            GT ->
+              1
+                + fundsAt' CronTarget {startTime = nextTime, ..} currentTime
             EQ -> 1
         | otherwise = 0
 
-  earliestTimeAt t@CronTarget {startTime} = flip addUTCTime startTime . earliestTimeAt' t
+  earliestTimeAt t@CronTarget {..} funds
+    | Just previousTime <- previousMatch cronSchedule startTime =
+      flip addUTCTime previousTime $ earliestTimeAt' t {startTime = previousTime} funds
+    | otherwise = startTime
     where
       earliestTimeAt' CronTarget {..} totalFunds
         | Just nextTime <-
@@ -181,6 +185,27 @@ instance Target (CronTarget quote) where
               * fromRational (toRational totalFunds / toRational everyTick)
           EQ -> nextTime `diffUTCTime` startTime
         | otherwise = 0
+
+-- | Will return the previous time from the given starting point where
+-- this schedule would have matched. Returns Nothing if the schedule will
+-- never match. Note that this function is inclusive of the given
+-- time.
+previousMatch :: CronSchedule -> UTCTime -> Maybe UTCTime
+previousMatch cs now =
+  -- This uses 'one-sided' binary search, making O(lg n) calls to nextMatch
+  do
+    next <- nextMatch cs now
+    let beforeNext time = do
+          current <- nextMatch cs time
+          if current == next
+            then return time
+            else beforeNext current
+    let searchPrevious lookBehind = do
+          current <- nextMatch cs (addUTCTime (- lookBehind) now)
+          if current < next
+            then beforeNext current
+            else searchPrevious $ 2 * lookBehind
+    searchPrevious 60
 
 newtype Frequency = CronSchedule CronSchedule
   deriving (Generic, Show)

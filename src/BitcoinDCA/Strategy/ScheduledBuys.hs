@@ -93,6 +93,7 @@ scheduledBuys = withTypedConfig $ do
       completeOrder = completeOrder' actualVar filledSizeBroadcastChan spentFundsBroadcastChan
       CronSchedule cronSchedule = frequency
       target = CronTarget {startTime, everyTick = withFunds, cronSchedule}
+      initialFunds = fundsAt target startTime
   buysChan <- newTChanIO
   pendingOrdersChan <- newTChanIO
 
@@ -143,11 +144,11 @@ scheduledBuys = withTypedConfig $ do
             opt <- readTVar optimisticVar
             assetPair <- readTMVar assetPairMVar
 
-            let expected = fundsAt target rebalanceStartTime
+            let expected = fundsAt target rebalanceStartTime - initialFunds
                 funds = expected - opt
                 (Sum availableFunds, buys) = minimumBuys assetPair funds
                 opt' = opt + sum buys
-                nextRebalanceTime = earliestTimeAt target $ opt' + minMarketFunds assetPair
+                nextRebalanceTime = earliestTimeAt target $ initialFunds + opt' + minMarketFunds assetPair
             writeTChan buysChan `traverse_` (Buy <$> buys)
             writeTVar optimisticVar opt'
             scheduleRebalance nextRebalanceTime
@@ -159,12 +160,11 @@ scheduledBuys = withTypedConfig $ do
       rebalanceScheduler = conc . forever $ do
         ScheduleRebalance rebalanceTime <-
           atomically $ takeTMVar scheduleRebalanceMVar
-        let 
-          shouldRebalance = do
-            latest <- (rebalanceTime >=) <$> readTVar latestRebalanceTimeTVar
-            when latest $
-              writeTVar latestRebalanceTimeTVar rebalanceTime
-            return latest
+        let shouldRebalance = do
+              latest <- (rebalanceTime >=) <$> readTVar latestRebalanceTimeTVar
+              when latest $
+                writeTVar latestRebalanceTimeTVar rebalanceTime
+              return latest
 
         whenM (atomically shouldRebalance) $ do
           log Info $ "Scheduling rebalance for " +> rebalanceTime
@@ -175,7 +175,8 @@ scheduledBuys = withTypedConfig $ do
 
           void . forkIO . atomically $ do
             checkSTM =<< readTVar delay
-            whenM shouldRebalance
+            whenM
+              shouldRebalance
               rebalance
 
       buyer = conc . forever $ do
@@ -232,7 +233,8 @@ scheduledBuys = withTypedConfig $ do
 
       statusLogger = conc . forever $ do
         (optimistic, actual) <- atomically $ (,) <$> readTVar optimisticVar <*> readTVar actualVar
-        expected <- fundsAt target <$> liftIO getCurrentTime
+        currentTime <- liftIO getCurrentTime
+        let expected = fundsAt target currentTime - initialFunds
         log Info $ expected <+ " (expected) ≥ " +> optimistic <+ " (optimistic) ≥ " +> actual <+ " (actual)"
         threadDelay $ 12 * hour
 
@@ -263,7 +265,7 @@ withTypedConfig m = do
             whenNothing
               ( do
                   funds <- money . toRational $ withFunds'
-                  guard (funds > 0)
+                  guard $ funds > 0
                   return funds
               )
               $ refute $ pure "Funds must be a positive monetary value"
