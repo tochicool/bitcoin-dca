@@ -16,8 +16,20 @@ and more.
 You can download binaries from the latest [releases](https://github.com/tochicool/bitcoin-dca/releases/tag/latest).
 
 ## Usage
-The program reads its configuration from an external yaml configuration file at
-`config/config.yaml`. 
+The program reads its configuration from an external yaml configuration file:
+
+
+```
+bitcoin-dca - Automate dollar cost averaging on exchanges
+
+Usage: bitcoin-dca [-f|--config-file CONFIG]
+  Validate and run the strategies as configured from CONFIG
+
+Available options:
+  -f,--config-file CONFIG  The path to the config yaml file to load
+                           (default: "config/config.yaml")
+  -h,--help                Show this help text
+```
 
 
 ### Example: Recurring buys and auto withdraw

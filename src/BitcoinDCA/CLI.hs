@@ -1,6 +1,6 @@
 module BitcoinDCA.CLI where
 
-import Options.Applicative (Parser, ParserInfo, fullDesc, header, help, helper, info, long, metavar, progDesc, short, strOption, value, (<**>), ParserPrefs, disambiguate, prefs, showHelpOnError)
+import Options.Applicative (Parser, ParserInfo, fullDesc, header, help, helper, info, long, metavar, progDesc, short, strOption, value, (<**>), ParserPrefs, disambiguate, prefs, showHelpOnError, showDefault)
 
 newtype CLI = CLI
   { configFile :: FilePath
@@ -26,5 +26,6 @@ parser =
           <> short 'f'
           <> metavar "CONFIG"
           <> value "config/config.yaml"
+          <> showDefault
           <> help "The path to the config yaml file to load"
       )
