@@ -150,7 +150,7 @@ data CronTarget quote = CronTarget
 instance Target (CronTarget quote) where
   type TargetQuote (CronTarget quote) = quote
   fundsAt t@CronTarget {..} currentTime
-    | Just previousTime <- previousMatch cronSchedule currentTime = (everyTick *) . money' . toRational $ fundsAt' t {startTime = previousTime} currentTime
+    | Just previousTime <- previousMatch cronSchedule startTime = (everyTick *) . money' . toRational $ fundsAt' t {startTime = previousTime} currentTime
     | otherwise = 0
     where
       fundsAt' CronTarget {..} currentTime
