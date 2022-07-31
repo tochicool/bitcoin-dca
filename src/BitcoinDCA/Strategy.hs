@@ -33,6 +33,8 @@ import qualified Data.Text.Lazy as Text.Lazy
 import qualified Data.Text.Lazy.Builder as Text.Builder
 import UnliftIO (MonadUnliftIO, newBroadcastTChanIO)
 import Prelude hiding (log)
+import Data.Time (getCurrentTime, diffUTCTime)
+import UnliftIO.Concurrent (threadDelay)
 
 newtype StrategyT c m a = StrategyT {unStrategyT :: ReaderT (Env c m) m a}
   deriving
@@ -137,6 +139,17 @@ mapEnvConfig f env@Env {..} =
       logAction = hoistLogAction (\(StrategyT r) -> StrategyT $ withReaderT (const env) r) logAction,
       ..
     }
+
+-- | Unbounded delay adapted from: https://hackage.haskell.org/package/unbounded-delays-0.1.1.1/docs/src/Control.Concurrent.Thread.Delay.html#delay
+delay :: MonadIO m => Integer -> m ()
+delay time | time <= 0 = pure ()
+           | otherwise = do
+  start <- liftIO getCurrentTime
+  let maxWait = min time $ toInteger (maxBound :: Int)
+  threadDelay $ fromInteger maxWait
+  end <- liftIO getCurrentTime
+  let actualWaitTime = max 0 $ floor $ (end `diffUTCTime` start) * second
+  when (actualWaitTime < time) $ delay $ time - actualWaitTime
 
 baseRetryDelay :: Num a => a
 baseRetryDelay = 500 * millisecond

@@ -40,7 +40,7 @@ import GHC.Generics
 import GHC.TypeLits (KnownSymbol, Symbol)
 import Money (mkSomeDense)
 import UnliftIO.Async (conc, runConc)
-import UnliftIO.Concurrent (forkIO, threadDelay)
+import UnliftIO.Concurrent (forkIO)
 import UnliftIO.STM
 import Prelude hiding (log)
 
@@ -132,7 +132,7 @@ scheduledBuys = withTypedConfig $ do
 
       assetPairUpdateProducer = conc $
         forever $ do
-          threadDelay assetPairUpdateInterval
+          delay assetPairUpdateInterval
           atomically updateAssetPair
 
       rebalanceConsumer = conc $
@@ -171,11 +171,10 @@ scheduledBuys = withTypedConfig $ do
 
           registeredTime <- liftIO getCurrentTime
           let μsUntilRebalance = max 0 . round $ (rebalanceTime `diffUTCTime` registeredTime) * second
-          delay <- registerDelay μsUntilRebalance
 
-          void . forkIO . atomically $ do
-            checkSTM =<< readTVar delay
-            whenM
+          void . forkIO $ do
+            delay μsUntilRebalance
+            atomically $ whenM
               shouldRebalance
               rebalance
 
@@ -185,7 +184,7 @@ scheduledBuys = withTypedConfig $ do
           (orderId, maybeOrder) <-
             placeMarketBuyOrder @_ @base funds `catchError` \err -> do
               log Error $ "An error occurred whilst placing market order: " +> err
-              threadDelay $ 10 * second
+              delay $ 10 * second
               atomically . onOrderFailed $ funds
               log Info "Adjusted available funds"
               throwError err
@@ -236,7 +235,7 @@ scheduledBuys = withTypedConfig $ do
         currentTime <- liftIO getCurrentTime
         let expected = fundsAt target currentTime - initialFunds
         log Info $ expected <+ " (expected) ≥ " +> optimistic <+ " (optimistic) ≥ " +> actual <+ " (actual)"
-        threadDelay $ 12 * hour
+        delay $ 12 * hour
 
   runConc $
     assetPairUpdater

@@ -55,7 +55,7 @@ import qualified Haskoin as Bitcoin
 import qualified Language.Bitcoin.Script.Descriptors as Desc
 import Money (ExchangeRate, exchangeRate, mkSomeDense)
 import UnliftIO.Async (conc, runConc)
-import UnliftIO.Concurrent (forkIO, threadDelay)
+import UnliftIO.Concurrent (forkIO)
 import UnliftIO.STM
 import Prelude hiding (log)
 
@@ -138,7 +138,7 @@ sweepWithdraw = withTypedConfig $ do
                 return True
 
       assetUpdateScheduler = conc . forever $ do
-        threadDelay assetUpdateInterval
+        delay assetUpdateInterval
         atomically updateAsset
 
       filledTotalUpdater = conc . forever $ do
@@ -193,7 +193,7 @@ sweepWithdraw = withTypedConfig $ do
           withdrawId <-
             withdrawDestination descriptorAddressesVar destination amount `catchError` \err -> do
               log Error $ "An error occurred whilst making withdraw: " +> err
-              threadDelay $ 10 * second
+              delay $ 10 * second
               atomically . onWithdrawFailed $ event
               log Info "Adjusted internal balances"
               throwError err
@@ -236,7 +236,7 @@ sweepWithdraw = withTypedConfig $ do
               <$> readTVar filledTotalVar
               <*> readTVar spentTotalVar
         log Info $ filledLeft <+ " left to withdraw from purchases with an estimated cost basis of " +> spentLeft
-        threadDelay $ 12 * hour
+        delay $ 12 * hour
 
   runConc $
     assetUpdater
