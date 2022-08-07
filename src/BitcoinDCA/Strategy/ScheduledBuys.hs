@@ -303,8 +303,8 @@ scheduleRebalance' v = putTMVar v . ScheduleRebalance
 
 onOrderFailed' :: TVar (Money quote) -> TMVar Rebalance -> TMVar UpdateAssetPair -> Money quote -> STM ()
 onOrderFailed' optimisticVar rebalanceMVar updateAssetPairMVar funds = void $ do
-  modifyTVar optimisticVar (`subtract` funds)
-  rebalance' rebalanceMVar
+  modifyTVar optimisticVar $ subtract funds
+  rebalance' rebalanceMVar RebalanceNow
   updateAssetPair' updateAssetPairMVar
 
 completeOrder' :: TVar (Money quote) -> TChan Rational -> TChan Rational -> Money quote -> Order base -> STM ()
