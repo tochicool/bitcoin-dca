@@ -21,6 +21,7 @@ import BitcoinDCA.Types
 import Colog (HasLog (..), LogAction (..), Message, Msg (Msg, msgText), Severity (Error), cmap, hoistLogAction, log)
 import Control.Concurrent.Forkable (ForkableMonad (forkIO))
 import Control.Concurrent.STM (TChan)
+import Control.Concurrent.STM.Delay (newDelay, waitDelay)
 import Control.Monad.Except
 import Control.Monad.Reader
 import Data.Function (on)
@@ -31,10 +32,9 @@ import Data.Sequence (Seq)
 import Data.Text (Text)
 import qualified Data.Text.Lazy as Text.Lazy
 import qualified Data.Text.Lazy.Builder as Text.Builder
-import UnliftIO (MonadUnliftIO, newBroadcastTChanIO)
+import Data.Time (diffUTCTime, getCurrentTime)
+import UnliftIO (MonadUnliftIO, atomically, newBroadcastTChanIO)
 import Prelude hiding (log)
-import Data.Time (getCurrentTime, diffUTCTime)
-import UnliftIO.Concurrent (threadDelay)
 
 newtype StrategyT c m a = StrategyT {unStrategyT :: ReaderT (Env c m) m a}
   deriving
@@ -142,14 +142,16 @@ mapEnvConfig f env@Env {..} =
 
 -- | Unbounded delay adapted from: https://hackage.haskell.org/package/unbounded-delays-0.1.1.1/docs/src/Control.Concurrent.Thread.Delay.html#delay
 delay :: MonadIO m => Integer -> m ()
-delay time | time <= 0 = pure ()
-           | otherwise = do
-  start <- liftIO getCurrentTime
-  let maxWait = min time $ toInteger (maxBound :: Int)
-  threadDelay $ fromInteger maxWait
-  end <- liftIO getCurrentTime
-  let actualWaitTime = max 0 $ floor $ (end `diffUTCTime` start) * second
-  when (actualWaitTime < time) $ delay $ time - actualWaitTime
+delay time
+  | time <= 0 = pure ()
+  | otherwise = do
+    start <- liftIO getCurrentTime
+    let maxWait = min time $ toInteger (maxBound :: Int)
+    d <- liftIO $ newDelay $ fromInteger maxWait
+    atomically $ waitDelay d
+    end <- liftIO getCurrentTime
+    let actualWaitTime = max 0 $ floor $ (end `diffUTCTime` start) * second
+    when (actualWaitTime < time) $ delay $ time - actualWaitTime
 
 baseRetryDelay :: Num a => a
 baseRetryDelay = 500 * millisecond

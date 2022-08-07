@@ -79,6 +79,7 @@ library
     , servant
     , servant-client
     , stm
+    , stm-delay
     , text
     , time
     , unliftio
@@ -120,6 +121,7 @@ executable bitcoin-dca
     , servant
     , servant-client
     , stm
+    , stm-delay
     , text
     , time
     , unliftio
@@ -170,6 +172,7 @@ test-suite bitcoin-dca-test
     , servant
     , servant-client
     , stm
+    , stm-delay
     , tasty
     , tasty-hunit
     , tasty-quickcheck

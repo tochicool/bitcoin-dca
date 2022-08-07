@@ -42,6 +42,7 @@ dependencies:
 - servant
 - servant-client
 - stm
+  - stm-delay
 - text
 - time
 - unliftio
