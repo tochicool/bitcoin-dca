@@ -18,9 +18,10 @@ description:         Please see the README on GitHub at <https://github.com/toch
 dependencies:
 - aeson
 - async
+- attoparsec
 - base >= 4.7 && < 5
 - base64
-- bitcoin-scripting
+- bitcoin-scripting >= 0.3 && < 0.4
 - bytestring
 - co-log
 - containers
@@ -42,7 +43,7 @@ dependencies:
 - servant
 - servant-client
 - stm
-  - stm-delay
+- stm-delay
 - text
 - time
 - unliftio

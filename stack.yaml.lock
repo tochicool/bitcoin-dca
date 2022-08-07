@@ -26,19 +26,19 @@ packages:
   original:
     hackage: monad-validate-1.2.0.0@sha256:9850f408431098b28806dd464b6825a88a0b56c84f380d7fe0454c1df9d6f881,3505
 - completed:
-    hackage: bitcoin-scripting-0.2.0@sha256:8ee26f223d6446867884c401dae1cd9cf0034652a4ffa74d0ad727e7b2de0eb4,2314
+    hackage: bitcoin-scripting-0.3.0@sha256:cca05553fe6a7d60252143ec751de828686b21205102027b685a96869984aed0,2402
     pantry-tree:
-      size: 2027
-      sha256: 6b917418bc092adf63d8ca526c5f92faf8cc7b53e5c4578c1bc809c461cf0146
+      size: 2122
+      sha256: 3992c45edba2d02011293ceed100ce01d8a79e79fdfdd341ee7c753fdd66f9d5
   original:
-    hackage: bitcoin-scripting-0.2.0@sha256:8ee26f223d6446867884c401dae1cd9cf0034652a4ffa74d0ad727e7b2de0eb4,2314
+    hackage: bitcoin-scripting-0.3.0@sha256:cca05553fe6a7d60252143ec751de828686b21205102027b685a96869984aed0,2402
 - completed:
-    hackage: haskoin-core-0.20.5@sha256:b88f2a55171d0d9e387789fdbe6f2801c9aba4effb538c5483ee3f48a2b39bac,4836
+    hackage: haskoin-core-0.21.2@sha256:42ed6bd87aaef9e3a7bc3001739a4a2b9eb4614f90a62face10df1d8e665d115,4931
     pantry-tree:
-      size: 5111
-      sha256: a35c0805ae1794076f6242aa7606ab4917358699202c3bc4677d3a7d0614e8d4
+      size: 5525
+      sha256: 7e70ca51e0080288240f54f9a45eb65168d390f02b80453d1ecb30d141357564
   original:
-    hackage: haskoin-core-0.20.5@sha256:b88f2a55171d0d9e387789fdbe6f2801c9aba4effb538c5483ee3f48a2b39bac,4836
+    hackage: haskoin-core-0.21.2@sha256:42ed6bd87aaef9e3a7bc3001739a4a2b9eb4614f90a62face10df1d8e665d115,4931
 snapshots:
 - completed:
     size: 590100

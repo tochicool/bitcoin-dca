@@ -23,6 +23,8 @@ import Data.Coerce (Coercible, coerce)
 import Data.Data (Proxy (Proxy))
 import Data.Maybe (fromJust)
 import Data.String (IsString)
+import qualified Data.Attoparsec.Text as Attoparsec
+import qualified Data.Text as Text
 import qualified Data.Text.Encoding as Text
 import Data.Time (UTCTime, addUTCTime, diffUTCTime)
 import GHC.Generics (Generic)
@@ -58,9 +60,18 @@ newtype OutputDescriptor = OutputDescriptor Bitcoin.OutputDescriptor
 
 instance FromJSON OutputDescriptor where
   parseJSON = withText "Output descriptor" $ \desc ->
-    case Bitcoin.parseDescriptor Bitcoin.btc desc of
+    case Attoparsec.parseOnly (Bitcoin.outputDescriptorParser Bitcoin.btc <* Attoparsec.endOfInput) desc of
       Left err -> fail err
-      Right x -> return $ OutputDescriptor x
+      Right Bitcoin.ChecksumDescriptor {..} ->
+        case checksumStatus of
+          Bitcoin.Invalid invalid ->
+            fail $
+              "provided checksum '"
+                <> Text.unpack invalid
+                <> "' is invalid - the checksum should be '"
+                <> Text.unpack expectedChecksum
+                <> "'"
+          _ -> return $ OutputDescriptor descriptor
 
 instance ToJSON OutputDescriptor where
   toJSON (OutputDescriptor desc) = String $ Bitcoin.descriptorToText Bitcoin.btc desc
