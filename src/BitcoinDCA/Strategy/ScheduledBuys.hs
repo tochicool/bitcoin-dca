@@ -64,7 +64,10 @@ type ScheduledBuysStrategy = StrategyT Config
 
 data UpdateAssetPair = UpdateAssetPair
 
-data Rebalance = Rebalance
+data Rebalance
+  = RebalanceAt UTCTime
+  | RebalanceNow
+  deriving (Generic, Show)
 
 newtype ScheduleRebalance = ScheduleRebalance UTCTime
 
@@ -109,11 +112,11 @@ scheduledBuys = withTypedConfig $ do
               case result of
                 Right (Just retrievedAssetPair) -> do
                   newAssetPair <- adjustAssetPair minimumAmount retrievedAssetPair
-                  result <-
+                  oldAssetPairM <-
                     atomically $
-                      Just <$> takeTMVar assetPairMVar
-                        <|> Nothing <$ putTMVar assetPairMVar newAssetPair
-                  case result of
+                      tryReadTMVar assetPairMVar
+                        <* putTMVar assetPairMVar newAssetPair
+                  case oldAssetPairM of
                     Just oldAssetPair
                       | oldAssetPair == newAssetPair ->
                         log Info $ "No change in asset pair" +> newAssetPair
@@ -121,7 +124,7 @@ scheduledBuys = withTypedConfig $ do
                         log Info $ "Updated asset pair from " +> oldAssetPair <+ " to " +> newAssetPair
                     Nothing ->
                       log Info $ "Updated asset pair " +> newAssetPair
-                  atomically rebalance
+                  atomically $ rebalance RebalanceNow
                   return False
                 Right Nothing -> do
                   log Error $ "Asset pair with id=" +> (assetId @base, assetId @quote) <+ " does not exist"
@@ -137,10 +140,9 @@ scheduledBuys = withTypedConfig $ do
 
       rebalanceConsumer = conc $
         forever $ do
-          atomically $ readTMVar rebalanceMVar
+          rebalance <- atomically $ takeTMVar rebalanceMVar
           rebalanceStartTime <- liftIO getCurrentTime
           (buys, availableFunds) <- atomically $ do
-            Rebalance <- takeTMVar rebalanceMVar
             opt <- readTVar optimisticVar
             assetPair <- readTMVar assetPairMVar
 
@@ -154,8 +156,12 @@ scheduledBuys = withTypedConfig $ do
             scheduleRebalance nextRebalanceTime
             return (buys, availableFunds)
           let buyCount = length buys
-          log Info $ "Rebalance triggered " +> buyCount <+ case buyCount of { 1 -> " buy "; _ -> " buys " } +> buys
-          log Info $ "Rebalance left " +> availableFunds <+ " remaining funds"
+          log Info $
+            rebalance <+ " event started at " +> rebalanceStartTime
+              <+ "\n\t• triggered " +> buyCount
+              <+ case buyCount of { 1 -> " buy "; _ -> " buys " } +> buys
+              <+ "\n\t• left " +> availableFunds
+              <+ " remaining funds"
 
       rebalanceScheduler = conc . forever $ do
         ScheduleRebalance rebalanceTime <-
@@ -168,15 +174,16 @@ scheduledBuys = withTypedConfig $ do
 
         whenM (atomically shouldRebalance) $ do
           log Info $ "Scheduling rebalance for " +> rebalanceTime
-
-          registeredTime <- liftIO getCurrentTime
-          let μsUntilRebalance = max 0 . round $ (rebalanceTime `diffUTCTime` registeredTime) * second
-
           void . forkIO $ do
+            registeredTime <- liftIO getCurrentTime
+            let μsUntilRebalance = max 0 . round $ (rebalanceTime `diffUTCTime` registeredTime) * second
             delay μsUntilRebalance
-            atomically $ whenM
-              shouldRebalance
-              rebalance
+            log Debug $ "Delay for rebalance at " +> rebalanceTime <+ " is over"
+            atomically $
+              whenM
+                shouldRebalance
+                $ rebalance $ RebalanceAt rebalanceTime
+            log Debug $ "Rebalance event for " +> rebalanceTime <+ " has been sent"
 
       buyer = conc . forever $ do
         Buy funds <- atomically . readTChan $ buysChan
@@ -295,8 +302,8 @@ withTypedConfig m = do
 updateAssetPair' :: TMVar UpdateAssetPair -> STM Bool
 updateAssetPair' = flip tryPutTMVar UpdateAssetPair
 
-rebalance' :: TMVar Rebalance -> STM ()
-rebalance' = void <$> flip tryPutTMVar Rebalance
+rebalance' :: TMVar Rebalance -> Rebalance -> STM ()
+rebalance' v = void . tryPutTMVar v
 
 scheduleRebalance' :: TMVar ScheduleRebalance -> UTCTime -> STM ()
 scheduleRebalance' v = putTMVar v . ScheduleRebalance
