@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           bitcoin-dca
-version:        0.2.0.1
+version:        0.2.1.0
 synopsis:       Automate dollar cost averaging on exchanges
 description:    Please see the README on GitHub at <https://github.com/tochicool/bitcoin-dca#readme>
 category:       Finance, Web
