@@ -61,8 +61,51 @@ jobs:
           path: '["app/", "src/", "test/"]'
           fail-on: warning
 
+  tag:
+    name: Tag version
+    runs-on: ubuntu-latest
+    outputs:
+      ref: ${{ steps.set-outputs.outputs.ref }}
+      clean_changelog: ${{ steps.changelog.outputs.clean_changelog }}
+    steps:
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
+        if: github.ref == 'refs/heads/master'
+        with:
+          fetch-depth: 0
+
+      - name: Covert pvp to semver
+        if: github.ref == 'refs/heads/master'
+        run: ./.github/scripts/pvp-to-semver.sh
+        shell: bash
+
+      - name: Generate changelog
+        if: github.ref == 'refs/heads/master'
+        uses: TriPSs/conventional-changelog-action@d360fad3a42feca6462f72c97c165d60a02d4bf2
+        id: changelog
+        with:
+          release-count: 0
+          version-file: package.yaml
+          skip-git-pull: true
+          pre-commit: ./.github/scripts/pre-commit.js
+          git-push: true
+          output-file: ChangeLog.md
+
+      - name: Tag latest
+        uses: EndBug/latest-tag@8b12061830221b438839f7048d1320ac353926aa
+        if: github.ref == 'refs/heads/master'
+      
+      - name: Set outputs
+        id: set-outputs
+        run: >
+          if [ "${{ github.ref }}" != "refs/heads/master" ] || [ "${{ steps.changelog.outputs.skipped }}" == "true" ]; then
+            echo "::set-output name=ref::${{ github.ref }}"
+          else
+            echo "::set-output name=ref::${{ steps.changelog.outputs.tag }}"
+          fi
+        shell: bash
+
   docker:
-    needs: [changes]
+    needs: [changes,tag]
     if: ${{ needs.changes.outputs.build == 'true' || needs.changes.outputs.docker == 'true' }}
     runs-on: ubuntu-latest
     permissions:
@@ -74,6 +117,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
+        with:
+          ref: ${{ needs.tag.outputs.ref }}
 
       - name: Install cosign
         if: github.event_name != 'pull_request'
@@ -99,12 +144,16 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
             type=ref,event=branch
             type=ref,event=pr
+            type=match,pattern=v\d+.\d+.\d+,group=0,value=${{ needs.tag.outputs.ref }}
+            type=match,pattern=(v\d+.\d+).\d+,group=1,value=${{ needs.tag.outputs.ref }}
+            type=match,pattern=(v\d+).\d+.\d+,group=1,value=${{ needs.tag.outputs.ref }}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
 
       - name: Build and push Docker image
         id: build-and-push
-        uses: docker/build-push-action@1cb9d22b932e4832bb29793b7777ec860fc1cde0
+        uses: docker/build-push-action@c84f38281176d4c9cdb1626ffafcd6b3911b5d94
         with:
           context: .
           push: ${{ github.event_name != 'pull_request' }}
@@ -120,7 +169,7 @@ jobs:
         run: echo "${{ steps.meta.outputs.tags }}" | xargs -I {} cosign sign {}@${{ steps.build-and-push.outputs.digest }}
 
   build:
-    needs: [changes]
+    needs: [changes, tag]
     if: ${{ needs.changes.outputs.build == 'true' }}
     strategy:
       fail-fast: false
@@ -135,6 +184,7 @@ jobs:
     steps:
       - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
         with:
+          ref: ${{ needs.tag.outputs.ref }}
           submodules: true
 
       - uses: haskell/actions/setup@f7b0997283589ea5a6b4f2ade6a239d70a412877
@@ -145,7 +195,7 @@ jobs:
 
       - name: Cache
         id: cache
-        uses: actions/cache@0865c47f36e68161719c5b124609996bb5c40129
+        uses: actions/cache@f4278025ab0f432ce369118909e46deec636f50c
         with:
           path: |
             ${{ steps.setup-haskell.outputs.stack-root }}
@@ -212,41 +262,47 @@ jobs:
           name: bitcoin-dca-${{ matrix.os }}${{ steps.exe.outputs.ext }}
           path: bin/bitcoin-dca-${{ matrix.os }}${{ steps.exe.outputs.ext }}
 
-  pre-release:
-    needs: build
-    name: Pre Release
+  prerelease:
+    needs: [tag, build]
+    name: Release
     runs-on: ubuntu-latest
 
-    if: >
-      github.ref == 'refs/heads/master'
+    if: needs.tag.outputs.ref != github.ref
     steps:
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
+        with:
+          ref: ${{ needs.tag.outputs.ref }}
+
       - name: Download Linux executable
         uses: actions/download-artifact@fb598a63ae348fa914e94cd0ff38f362e927b741
         with:
           name: bitcoin-dca-ubuntu-latest
           path: bin
+
       - name: Download MacOS executable
         uses: actions/download-artifact@fb598a63ae348fa914e94cd0ff38f362e927b741
         with:
           name: bitcoin-dca-macOS-latest
           path: bin
+
       - name: Download Windows executable
         uses: actions/download-artifact@fb598a63ae348fa914e94cd0ff38f362e927b741
         with:
           name: bitcoin-dca-windows-latest.exe
           path: bin
-      - uses: marvinpinto/action-automatic-releases@919008cf3f741b179569b7a6fb4d8860689ab7f0
+
+      - name: Create Prerelease
+        uses: ncipollo/release-action@58ae73b360456532aafd58ee170c045abbeaee37
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          automatic_release_tag: latest
+          name: ${{ needs.tag.outputs.ref }}
+          tag: ${{ needs.tag.outputs.ref }}
+          body: ${{ needs.tag.outputs.clean_changelog }}
+          artifacts: "LICENSE,bin/bitcoin-dca-*"
           prerelease: true
-          title: Latest Build
-          files: |
-            LICENSE
-            bin/bitcoin-dca-*
+          allowUpdates: true
 
   deploy:
-    needs: [changes]
+    needs: [changes, tag]
     if: ${{ github.ref == 'refs/heads/master' && needs.changes.outputs.deploy == 'true' }}
 
     name: Deploy
@@ -254,6 +310,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
+        with:
+          ref: ${{ needs.tag.outputs.ref }}
 
       - uses: Azure/setup-kubectl@7f7e5ba5ea3e491b92e6e8e5819963f8f3a1f076
 
@@ -275,7 +333,7 @@ jobs:
           kubectl-version: latest
         id: bake
 
-      - uses: Azure/k8s-deploy@497ce6351cbc80f4a4ccec2b9147fce14017c0eb
+      - uses: Azure/k8s-deploy@4e60e959eaa658ffb541153e43a6bf58646852e3
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
