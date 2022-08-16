@@ -333,7 +333,7 @@ jobs:
           kubectl-version: latest
         id: bake
 
-      - uses: Azure/k8s-deploy@4e60e959eaa658ffb541153e43a6bf58646852e3
+      - uses: Azure/k8s-deploy@bba74ad3b52ed169d5acfd02b687247e4c172fde
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
