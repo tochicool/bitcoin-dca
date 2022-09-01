@@ -80,7 +80,7 @@ jobs:
 
       - name: Generate changelog
         if: github.ref == 'refs/heads/master'
-        uses: TriPSs/conventional-changelog-action@d360fad3a42feca6462f72c97c165d60a02d4bf2
+        uses: TriPSs/conventional-changelog-action@78239f16d25a195e3c21374740c952ce611c2f7a
         id: changelog
         with:
           release-count: 0
