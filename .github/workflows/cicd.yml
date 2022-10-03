@@ -195,7 +195,7 @@ jobs:
 
       - name: Cache
         id: cache
-        uses: actions/cache@f4278025ab0f432ce369118909e46deec636f50c
+        uses: actions/cache@56461b9eb0f8438fd15c7a9968e3c9ebb18ceff1
         with:
           path: |
             ${{ steps.setup-haskell.outputs.stack-root }}
