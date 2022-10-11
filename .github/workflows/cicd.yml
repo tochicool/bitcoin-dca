@@ -326,7 +326,7 @@ jobs:
           CONFIG: ${{ secrets.CONFIG }}
         if: "${{ env.CONFIG != '' }}"
 
-      - uses: Azure/k8s-bake@97c530f4236faeb7aa7a3ea83fd730637b75c899
+      - uses: Azure/k8s-bake@01575fad636a196862ffce12a380f65c52e94575
         with:
           renderEngine: kustomize
           kustomizationPath: deploy/kustomize/production
