@@ -91,7 +91,7 @@ jobs:
           output-file: ChangeLog.md
 
       - name: Tag latest
-        uses: EndBug/latest-tag@8b12061830221b438839f7048d1320ac353926aa
+        uses: EndBug/latest-tag@c28e58d053eca4dac6d0d995face76a6555c5539
         if: github.ref == 'refs/heads/master'
       
       - name: Set outputs
