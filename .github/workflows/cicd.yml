@@ -292,7 +292,7 @@ jobs:
           path: bin
 
       - name: Create Prerelease
-        uses: ncipollo/release-action@58ae73b360456532aafd58ee170c045abbeaee37
+        uses: ncipollo/release-action@18eadf9c9b0f226f47f164f5373c6a44f0aae169
         with:
           name: ${{ needs.tag.outputs.ref }}
           tag: ${{ needs.tag.outputs.ref }}
