@@ -53,10 +53,10 @@ jobs:
       - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
 
       - name: Set up HLint
-        uses: haskell/actions/hlint-setup@f7b0997283589ea5a6b4f2ade6a239d70a412877
+        uses: haskell/actions/hlint-setup@3c89646d961d828e78fdd123db1dd64cca53a7a3
 
       - name: Run HLint
-        uses: haskell/actions/hlint-run@f7b0997283589ea5a6b4f2ade6a239d70a412877
+        uses: haskell/actions/hlint-run@3c89646d961d828e78fdd123db1dd64cca53a7a3
         with:
           path: '["app/", "src/", "test/"]'
           fail-on: warning
@@ -187,7 +187,7 @@ jobs:
           ref: ${{ needs.tag.outputs.ref }}
           submodules: true
 
-      - uses: haskell/actions/setup@f7b0997283589ea5a6b4f2ade6a239d70a412877
+      - uses: haskell/actions/setup@3c89646d961d828e78fdd123db1dd64cca53a7a3
         id: setup-haskell
         with:
           enable-stack: true
