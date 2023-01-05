@@ -21,7 +21,7 @@ jobs:
       docker: ${{ steps.filter.outputs.docker }}
       deploy: ${{ steps.filter.outputs.deploy }}
     steps:
-    - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
+    - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
 
     - uses: dorny/paths-filter@b2feaf19c27470162a626bd6fa8438ae5b263721
       id: filter
@@ -50,7 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Lint code
     steps:
-      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
 
       - name: Set up HLint
         uses: haskell/actions/hlint-setup@f7b0997283589ea5a6b4f2ade6a239d70a412877
@@ -68,7 +68,7 @@ jobs:
       ref: ${{ steps.set-outputs.outputs.ref }}
       clean_changelog: ${{ steps.changelog.outputs.clean_changelog }}
     steps:
-      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
         if: github.ref == 'refs/heads/master'
         with:
           fetch-depth: 0
@@ -116,7 +116,7 @@ jobs:
     name: Docker
     steps:
       - name: Checkout repository
-        uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
         with:
           ref: ${{ needs.tag.outputs.ref }}
 
@@ -182,7 +182,7 @@ jobs:
     name: Build
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
         with:
           ref: ${{ needs.tag.outputs.ref }}
           submodules: true
@@ -269,7 +269,7 @@ jobs:
 
     if: needs.tag.outputs.ref != github.ref
     steps:
-      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
         with:
           ref: ${{ needs.tag.outputs.ref }}
 
@@ -309,7 +309,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
         with:
           ref: ${{ needs.tag.outputs.ref }}
 
